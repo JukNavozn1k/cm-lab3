@@ -1,76 +1,45 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from tabulate import tabulate
-
-# Data points
+import matplotlib.pyplot as plt
+# Given data
 x = np.array([1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9])
 y = np.array([0, 5, 9, 13, 17, 20, 24, 26, 29, 32])
 
-# Number of data points
-n = len(x)
+# Fit a polynomial of degree 2 to the data
+coefficients, residuals, _, _, _ = np.polyfit(x, y, 2, full=True)
 
-# Initialize a and b to 0
-a = 0
-b = 0
+# Calculate the root mean square error
+rmse = np.sqrt(residuals[0] / len(x))
 
-# Initialize the RMSE to a large value
-RMSE = float('inf')
 
-# Set the tolerance for the RMSE
-tolerance = 1e-6
 
-# Set the maximum number of iterations
-max_iterations = 100
+# Generate prediction points and fit curve
+prediction_x = np.linspace(x.min(), x.max(), 100)
+prediction_y = np.polyval(coefficients, prediction_x)
 
-# Initialize the iteration counter
-iteration = 0
-
-# Initialize the table for printing the results
-results = []
-
-# Perform the iterations
-while RMSE > tolerance and iteration < max_iterations:
-    # Initialize the sums
-    sum_x = 0
-    sum_y = 0
-    sum_xy = 0
-    sum_xx = 0
-    sum_error = 0
-    
-    # Calculate the sums
-    for i in range(n):
-        sum_x += x[i]
-        sum_y += y[i]
-        sum_xy += x[i]*y[i]
-        sum_xx += x[i]*x[i]
-        sum_error += (y[i] - (a*x[i] + b))**2
-    
-    # Calculate the estimates for a and b
-    a_new = (n*sum_xy - sum_x*sum_y)/(n*sum_xx - sum_x**2)
-    b_new = (sum_y - a_new*sum_x)/n
-    
-    # Calculate the RMSE
-    RMSE = np.sqrt(sum_error/n)
-    
-    # Update the values of a and b
-    a = a_new
-    b = b_new
-    
-    # Increment the iteration counter
-    iteration += 1
-    
-    # Add the results to the table
-    results.append([iteration, a, b, RMSE])
-
+# Print a table of the original data and the predicted values
+headers = ['x', 'y', 'Predicted y']
+data = []
+for xx, yy, yy_pred in zip(x, y, np.polyval(coefficients, x)):
+    data.append([xx, yy, yy_pred])
+print(tabulate(data, headers=headers))
+print('Quadratic dependence')
 # Print the results
-print(tabulate(results, headers=['Iteration', 'a', 'b', 'RMSE']))
-print('Linear dependence Ax + b ')
+print(f'Root mean square error: {rmse:.2f}')
+print(f'Coefficients: {coefficients}')
 
-# Plot the data points and the fitted linear function
-plt.plot(x, y, 'o', label='Data points')
-plt.plot(x, a*x + b, '-', label='Fitted linear function')
-plt.xlabel('x')
-plt.ylabel('y')
+# Fit a polynomial of degree 2 to the data
+coefficients, residuals, _, _, _ = np.polyfit(x, y, 2, full=True)
+
+# Calculate the root mean square error
+rmse = np.sqrt(residuals[0] / len(x))
+
+# Generate prediction points and fit curve
+prediction_x = np.linspace(x.min(), x.max(), 100)
+prediction_y = np.polyval(coefficients, prediction_x)
+
+# Plot the original data and the fitted curve
+plt.plot(x, y, 'o', label='Original data')
+plt.plot(prediction_x, prediction_y, '-', label='Fitted curve')
 plt.legend()
 plt.show()
-
