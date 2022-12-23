@@ -1,44 +1,76 @@
-"""
-3. По заданным экспериментальным точкам выбрать вид эмпирической зависимости и выполнить среднеквадратичное приближение функции, применив метод наименьших квадратов для оценки параметров выбранной зависимости.
-Задание:
+import numpy as np
+import matplotlib.pyplot as plt
+from tabulate import tabulate
 
-1,0        0      
-1,1        5      
-1,2        9      
-1,3        13     
-1,4        17     
-1,5        20     
-1,6        24     
-1,7        26     
-1,8        29     
-1,9        32
+# Data points
+x = np.array([1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9])
+y = np.array([0, 5, 9, 13, 17, 20, 24, 26, 29, 32])
 
-
-"""
-
-from math import sqrt
-
-# define the data points
-x = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9]
-y = [0, 5, 9, 13, 17, 20, 24, 26, 29, 32]
-
-# calculate the sums
-sum_x = sum(x)
-sum_y = sum(y)
-sum_xy = sum([x[i]*y[i] for i in range(len(x))])
-sum_xx = sum([x[i]**2 for i in range(len(x))])
-sum_yy = sum([y[i]**2 for i in range(len(y))])
-
-# calculate the parameter estimates
+# Number of data points
 n = len(x)
-a = (sum_xy - (sum_x * sum_y) / n) / (sum_xx - (sum_x**2) / n)
-b = (sum_y - a * sum_x) / n
 
-# calculate the root-mean-square error
-sum_of_squared_differences = sum_yy + a**2 * sum_xx + b**2 * n - 2*a*sum_xy - 2*b*sum_y + 2*a*b*sum_x
-root_mean_square_error = sqrt(sum_of_squared_differences / n)
+# Initialize a and b to 0
+a = 0
+b = 0
 
-# print the results
-print("a = ", a)
-print("b = ", b)
-print("Root Mean Square Error = ", root_mean_square_error)
+# Initialize the RMSE to a large value
+RMSE = float('inf')
+
+# Set the tolerance for the RMSE
+tolerance = 1e-6
+
+# Set the maximum number of iterations
+max_iterations = 100
+
+# Initialize the iteration counter
+iteration = 0
+
+# Initialize the table for printing the results
+results = []
+
+# Perform the iterations
+while RMSE > tolerance and iteration < max_iterations:
+    # Initialize the sums
+    sum_x = 0
+    sum_y = 0
+    sum_xy = 0
+    sum_xx = 0
+    sum_error = 0
+    
+    # Calculate the sums
+    for i in range(n):
+        sum_x += x[i]
+        sum_y += y[i]
+        sum_xy += x[i]*y[i]
+        sum_xx += x[i]*x[i]
+        sum_error += (y[i] - (a*x[i] + b))**2
+    
+    # Calculate the estimates for a and b
+    a_new = (n*sum_xy - sum_x*sum_y)/(n*sum_xx - sum_x**2)
+    b_new = (sum_y - a_new*sum_x)/n
+    
+    # Calculate the RMSE
+    RMSE = np.sqrt(sum_error/n)
+    
+    # Update the values of a and b
+    a = a_new
+    b = b_new
+    
+    # Increment the iteration counter
+    iteration += 1
+    
+    # Add the results to the table
+    results.append([iteration, a, b, RMSE])
+
+# Print the results
+print(tabulate(results, headers=['Iteration', 'a', 'b', 'RMSE']))
+print('Linear dependence Ax + b ')
+
+# Plot the data points and the fitted linear function
+plt.plot(x, y, 'o', label='Data points')
+plt.plot(x, a*x + b, '-', label='Fitted linear function')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.show()
+
